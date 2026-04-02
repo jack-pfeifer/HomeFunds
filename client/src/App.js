@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
 
+const API_BASE_URL = "http://localhost:5000/api";
+
 const PAGES = {
   CONNECT: "CONNECT",
   DASHBOARD: "DASHBOARD",
@@ -13,75 +15,185 @@ const PAGES = {
 };
 
 function App() {
-
-  const [users, setUsers] = useState([]);
-  const [currentUser, setCurrentUser] = useState(null);
-  const [authMode, setAuthMode] = useState("SIGNUP"); // "LOGIN" or "SIGNUP"
-
-
-  const [incomeSources, setIncomeSources] = useState([
-    { id: 1, name: "Main Paycheck", amount: 3500 },
-  ]);
-
-  const [bills, setBills] = useState([
-    {
-      id: 1,
-      name: "Rent",
-      amount: 1200,
-      dueDate: "2025-12-01",
-      category: "Needs",
-    },
-    {
-      id: 2,
-      name: "Electric",
-      amount: 120,
-      dueDate: "2025-12-12",
-      category: "Needs",
-    },
-  ]);
-
-  const [familyMembers, setFamilyMembers] = useState(["Parent", "Child"]);
-  const [expenses, setExpenses] = useState([
-    {
-      id: 1,
-      member: "Parent",
-      description: "Groceries",
-      amount: 110,
-      category: "Needs",
-    },
-    {
-      id: 2,
-      member: "Child",
-      description: "School Supplies",
-      amount: 30,
-      category: "Needs",
-    },
-  ]);
-
-  const [goal, setGoal] = useState({
-    name: "Emergency Fund",
-    targetAmount: 1000,
-    currentAmount: 200,
-    deadline: "2026-03-01",
+  const [users, setUsers] = useState(() => {
+    const saved = localStorage.getItem("users");
+    return saved ? JSON.parse(saved) : [];
   });
 
-  const [connectedBank, setConnectedBank] = useState(null);
-  const [currentPage, setCurrentPage] = useState(PAGES.DASHBOARD);
-  const [budgetMode, setBudgetMode] = useState("CUSTOM");
-  const [customNeedsPct, setCustomNeedsPct] = useState(70);
-  const [customSavingsPct, setCustomSavingsPct] = useState(20);
-  const [customWantsPct, setCustomWantsPct] = useState(10);
-  const [monthlyLimit, setMonthlyLimit] = useState("");
+  const [currentUser, setCurrentUser] = useState(() => {
+    const saved = localStorage.getItem("currentUser");
+    return saved ? JSON.parse(saved) : null;
+  });
 
+  const [authMode, setAuthMode] = useState("SIGNUP");
+
+  const [incomeSources, setIncomeSources] = useState(() => {
+    const saved = localStorage.getItem("incomeSources");
+    return saved
+      ? JSON.parse(saved)
+      : [{ id: 1, name: "Main Paycheck", amount: 3500 }];
+  });
+
+  const [bills, setBills] = useState(() => {
+    const saved = localStorage.getItem("bills");
+    return saved
+      ? JSON.parse(saved)
+      : [
+          {
+            id: 1,
+            name: "Rent",
+            amount: 1200,
+            dueDate: "2025-12-01",
+            category: "Needs",
+          },
+          {
+            id: 2,
+            name: "Electric",
+            amount: 120,
+            dueDate: "2025-12-12",
+            category: "Needs",
+          },
+        ];
+  });
+
+  const [familyMembers, setFamilyMembers] = useState(() => {
+    const saved = localStorage.getItem("familyMembers");
+    return saved ? JSON.parse(saved) : ["Parent", "Child"];
+  });
+
+  const [expenses, setExpenses] = useState([]);
+
+  const [goal, setGoal] = useState(() => {
+    const saved = localStorage.getItem("goal");
+    return saved
+      ? JSON.parse(saved)
+      : {
+          name: "Emergency Fund",
+          targetAmount: 1000,
+          currentAmount: 200,
+          deadline: "2026-03-01",
+        };
+  });
+
+  const [connectedBank, setConnectedBank] = useState(() => {
+    const saved = localStorage.getItem("connectedBank");
+    return saved ? JSON.parse(saved) : null;
+  });
+
+  const [currentPage, setCurrentPage] = useState(() => {
+    const saved = localStorage.getItem("currentPage");
+    return saved || PAGES.DASHBOARD;
+  });
+
+  const [budgetMode, setBudgetMode] = useState(() => {
+    const saved = localStorage.getItem("budgetMode");
+    return saved || "CUSTOM";
+  });
+
+  const [customNeedsPct, setCustomNeedsPct] = useState(() => {
+    const saved = localStorage.getItem("customNeedsPct");
+    return saved ? JSON.parse(saved) : 70;
+  });
+
+  const [customSavingsPct, setCustomSavingsPct] = useState(() => {
+    const saved = localStorage.getItem("customSavingsPct");
+    return saved ? JSON.parse(saved) : 20;
+  });
+
+  const [customWantsPct, setCustomWantsPct] = useState(() => {
+    const saved = localStorage.getItem("customWantsPct");
+    return saved ? JSON.parse(saved) : 10;
+  });
+
+  const [monthlyLimit, setMonthlyLimit] = useState(() => {
+    const saved = localStorage.getItem("monthlyLimit");
+    return saved || "";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("users", JSON.stringify(users));
+  }, [users]);
+
+  useEffect(() => {
+    if (currentUser) {
+      localStorage.setItem("currentUser", JSON.stringify(currentUser));
+    } else {
+      localStorage.removeItem("currentUser");
+    }
+  }, [currentUser]);
+
+  useEffect(() => {
+    localStorage.setItem("incomeSources", JSON.stringify(incomeSources));
+  }, [incomeSources]);
+
+  useEffect(() => {
+    localStorage.setItem("bills", JSON.stringify(bills));
+  }, [bills]);
+
+  useEffect(() => {
+    localStorage.setItem("familyMembers", JSON.stringify(familyMembers));
+  }, [familyMembers]);
+
+  useEffect(() => {
+    localStorage.setItem("goal", JSON.stringify(goal));
+  }, [goal]);
+
+  useEffect(() => {
+    if (connectedBank) {
+      localStorage.setItem("connectedBank", JSON.stringify(connectedBank));
+    } else {
+      localStorage.removeItem("connectedBank");
+    }
+  }, [connectedBank]);
+
+  useEffect(() => {
+    localStorage.setItem("currentPage", currentPage);
+  }, [currentPage]);
+
+  useEffect(() => {
+    localStorage.setItem("budgetMode", budgetMode);
+  }, [budgetMode]);
+
+  useEffect(() => {
+    localStorage.setItem("customNeedsPct", JSON.stringify(customNeedsPct));
+  }, [customNeedsPct]);
+
+  useEffect(() => {
+    localStorage.setItem("customSavingsPct", JSON.stringify(customSavingsPct));
+  }, [customSavingsPct]);
+
+  useEffect(() => {
+    localStorage.setItem("customWantsPct", JSON.stringify(customWantsPct));
+  }, [customWantsPct]);
+
+  useEffect(() => {
+    localStorage.setItem("monthlyLimit", monthlyLimit);
+  }, [monthlyLimit]);
+
+  useEffect(() => {
+    const fetchExpenses = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/expenses`);
+        const data = await response.json();
+        setExpenses(data);
+      } catch (error) {
+        console.error("Failed to fetch expenses:", error);
+      }
+    };
+
+    fetchExpenses();
+  }, []);
 
   const totalIncome = incomeSources.reduce(
     (sum, src) => sum + Number(src.amount || 0),
     0
   );
+
   const totalBills = bills.reduce(
     (sum, bill) => sum + Number(bill.amount || 0),
     0
   );
+
   const totalExpenses = expenses.reduce(
     (sum, exp) => sum + Number(exp.amount || 0),
     0
@@ -107,8 +219,6 @@ function App() {
   const overLimit =
     monthlyLimit !== "" &&
     totalPlannedSpending > Number(monthlyLimit || 0);
-
-
 
   const handleSignup = (formData) => {
     const {
@@ -153,7 +263,6 @@ function App() {
     setUsers((prev) => [...prev, newUser]);
     setCurrentUser(newUser);
 
-    // use signup info to set the main goal
     setGoal({
       name: goalName || "Emergency Fund",
       targetAmount: parsedGoalTarget || 1000,
@@ -161,7 +270,6 @@ function App() {
       deadline: "",
     });
 
-    // use income from signup as starting income source if provided
     if (parsedMonthlyIncome > 0) {
       setIncomeSources([
         {
@@ -175,8 +283,6 @@ function App() {
       ]);
     }
 
-    // After signup: if they want to link a bank now,
-    // send them to Connect Bank once, then to Dashboard
     if (linkBankNow) {
       setCurrentPage(PAGES.CONNECT);
     } else {
@@ -201,11 +307,9 @@ function App() {
   const handleLogout = () => {
     setCurrentUser(null);
     setAuthMode("LOGIN");
-    setConnectedBank(null);
     setCurrentPage(PAGES.DASHBOARD);
   };
 
-  // --- Remove handlers added so users can delete added items --- //
   const handleRemoveIncome = (id) => {
     if (!window.confirm("Remove this income source?")) return;
     setIncomeSources((prev) => prev.filter((i) => i.id !== id));
@@ -216,21 +320,31 @@ function App() {
     setBills((prev) => prev.filter((b) => b.id !== id));
   };
 
-  const handleRemoveExpense = (id) => {
+  const handleRemoveExpense = async (id) => {
     if (!window.confirm("Remove this expense?")) return;
-    setExpenses((prev) => prev.filter((e) => e.id !== id));
+
+    try {
+      await fetch(`${API_BASE_URL}/expenses/${id}`, {
+        method: "DELETE",
+      });
+
+      setExpenses((prev) => prev.filter((expense) => expense._id !== id));
+    } catch (error) {
+      console.error("Failed to delete expense:", error);
+    }
   };
 
   const handleRemoveMember = (name) => {
     if (!window.confirm(`Remove member "${name}" and their recorded expenses?`))
       return;
+
     setFamilyMembers((prev) => prev.filter((m) => m !== name));
-    // Also remove expenses associated with that member
     setExpenses((prev) => prev.filter((e) => e.member !== name));
   };
 
   const handleAddIncome = (name, amount) => {
     if (!name || !amount) return;
+
     setIncomeSources((prev) => [
       ...prev,
       { id: Date.now(), name, amount: Number(amount) },
@@ -239,6 +353,7 @@ function App() {
 
   const handleAddBill = (name, amount, dueDate, category) => {
     if (!name || !amount) return;
+
     setBills((prev) => [
       ...prev,
       {
@@ -251,18 +366,32 @@ function App() {
     ]);
   };
 
-  const handleAddExpense = (member, description, amount, category) => {
+  const handleAddExpense = async (member, description, amount, category) => {
     if (!member || !description || !amount) return;
-    setExpenses((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        member,
-        description,
-        amount: Number(amount),
-        category: category || "Wants",
-      },
-    ]);
+
+    const newExpense = {
+      member,
+      description,
+      amount: Number(amount),
+      category: category || "Wants",
+      date: new Date().toISOString().split("T")[0],
+      receiptUrl: "",
+    };
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/expenses`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newExpense),
+      });
+
+      const savedExpense = await response.json();
+      setExpenses((prev) => [...prev, savedExpense]);
+    } catch (error) {
+      console.error("Failed to add expense:", error);
+    }
   };
 
   const handleUpdateGoal = (updates) => {
@@ -271,11 +400,11 @@ function App() {
 
   const handleAddMember = (name) => {
     if (!name) return;
+
     if (!familyMembers.includes(name)) {
       setFamilyMembers((prev) => [...prev, name]);
     }
   };
-
 
   if (!currentUser) {
     return (
@@ -289,8 +418,6 @@ function App() {
       </div>
     );
   }
-
-  // --- Main app ---
 
   return (
     <div className="app">
@@ -605,7 +732,6 @@ function Sidebar({ currentPage, setCurrentPage }) {
     <nav className="sidebar">
       <h1 className="logo">HomeFunds</h1>
 
-      {/* Dashboard first, as the main page */}
       <button
         className={currentPage === PAGES.DASHBOARD ? "active" : ""}
         onClick={() => setCurrentPage(PAGES.DASHBOARD)}
@@ -634,7 +760,6 @@ function Sidebar({ currentPage, setCurrentPage }) {
         Goals & Tips
       </button>
 
-      {/* Connect Bank moved lower in the nav */}
       <button
         className={currentPage === PAGES.CONNECT ? "active" : ""}
         onClick={() => setCurrentPage(PAGES.CONNECT)}
@@ -1144,13 +1269,17 @@ function BudgetPlanner({
   );
 }
 
-function FamilySpending({ familyMembers, expenses, onAddExpense, onRemoveExpense }) {
+function FamilySpending({
+  familyMembers,
+  expenses,
+  onAddExpense,
+  onRemoveExpense,
+}) {
   const [selectedMember, setSelectedMember] = useState(familyMembers[0] || "");
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("Needs");
 
-  // keep selectedMember in sync if familyMembers change / are removed
   useEffect(() => {
     if (!familyMembers.includes(selectedMember)) {
       setSelectedMember(familyMembers[0] || "");
@@ -1160,6 +1289,7 @@ function FamilySpending({ familyMembers, expenses, onAddExpense, onRemoveExpense
   const filtered = expenses.filter((e) =>
     selectedMember ? e.member === selectedMember : true
   );
+
   const totalForMember = filtered.reduce(
     (sum, e) => sum + Number(e.amount || 0),
     0
@@ -1191,11 +1321,11 @@ function FamilySpending({ familyMembers, expenses, onAddExpense, onRemoveExpense
 
         <ul>
           {filtered.map((exp) => (
-            <li key={exp.id}>
-              {exp.description}: ${exp.amount.toFixed(2)} ({exp.category}){" "}
+            <li key={exp._id}>
+              {exp.description}: ${Number(exp.amount).toFixed(2)} ({exp.category}){" "}
               <button
                 className="small-button danger"
-                onClick={() => onRemoveExpense && onRemoveExpense(exp.id)}
+                onClick={() => onRemoveExpense && onRemoveExpense(exp._id)}
                 style={{ marginLeft: 8 }}
               >
                 Remove
