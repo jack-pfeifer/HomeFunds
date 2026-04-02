@@ -26,3 +26,9 @@ yarn-error.log*
 # misc
 .pnp
 .pnp.js
+
+node_modules/
+.env
+.env*
+!.env.example
+server/.env
