@@ -366,27 +366,32 @@ function App() {
     ]);
   };
 
-  const handleAddExpense = async (member, description, amount, category) => {
+  const handleAddExpense = async (
+    member,
+    description,
+    amount,
+    category,
+    receiptFile
+  ) => {
     if (!member || !description || !amount) return;
-
-    const newExpense = {
-      member,
-      description,
-      amount: Number(amount),
-      category: category || "Wants",
-      date: new Date().toISOString().split("T")[0],
-      receiptUrl: "",
-    };
-
+  
+    const formData = new FormData();
+    formData.append("member", member);
+    formData.append("description", description);
+    formData.append("amount", Number(amount));
+    formData.append("category", category || "Wants");
+    formData.append("date", new Date().toISOString().split("T")[0]);
+  
+    if (receiptFile) {
+      formData.append("receipt", receiptFile);
+    }
+  
     try {
       const response = await fetch(`${API_BASE_URL}/expenses`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newExpense),
+        body: formData,
       });
-
+  
       const savedExpense = await response.json();
       setExpenses((prev) => [...prev, savedExpense]);
     } catch (error) {
@@ -1279,6 +1284,7 @@ function FamilySpending({
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("Needs");
+  const [receiptFile, setReceiptFile] = useState(null);
 
   useEffect(() => {
     if (!familyMembers.includes(selectedMember)) {
@@ -1323,6 +1329,16 @@ function FamilySpending({
           {filtered.map((exp) => (
             <li key={exp._id}>
               {exp.description}: ${Number(exp.amount).toFixed(2)} ({exp.category}){" "}
+              {exp.receiptUrl && (
+                <a
+                  href={`http://localhost:5000${exp.receiptUrl}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ marginLeft: 8, marginRight: 8 }}
+                >
+                  View Receipt
+                </a>
+              )}
               <button
                 className="small-button danger"
                 onClick={() => onRemoveExpense && onRemoveExpense(exp._id)}
@@ -1344,6 +1360,7 @@ function FamilySpending({
               onChange={(e) => setDescription(e.target.value)}
             />
           </label>
+
           <label className="field-label">
             Amount
             <input
@@ -1353,6 +1370,7 @@ function FamilySpending({
               onChange={(e) => setAmount(e.target.value)}
             />
           </label>
+
           <label className="field-label">
             Category
             <select
@@ -1363,12 +1381,29 @@ function FamilySpending({
               <option value="Wants">Wants</option>
             </select>
           </label>
+
+          <label className="field-label">
+            Receipt (optional)
+            <input
+              type="file"
+              accept="image/*,.pdf"
+              onChange={(e) => setReceiptFile(e.target.files[0] || null)}
+            />
+          </label>
+
           <button
             onClick={() => {
-              onAddExpense(selectedMember, description, amount, category);
+              onAddExpense(
+                selectedMember,
+                description,
+                amount,
+                category,
+                receiptFile
+              );
               setDescription("");
               setAmount("");
               setCategory("Needs");
+              setReceiptFile(null);
             }}
           >
             Add Expense

@@ -6,7 +6,8 @@ const expenseSchema = new mongoose.Schema({
   amount: Number,
   category: String,
   date: String,
-  receiptUrl: String
+  receiptUrl: String,
+  receiptFileName: String,
 });
 
 module.exports = mongoose.model("Expense", expenseSchema);
